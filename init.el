@@ -11,7 +11,7 @@
 
 ;; Turn off mouse interface early in startup to avoid momentary display
 ;; You really don't need these; trust me.
-(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+;;(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
@@ -73,4 +73,44 @@
 (if (file-exists-p user-specific-dir)
   (mapc #'load (directory-files user-specific-dir nil ".*el$")))
 
+(require 'color-theme)
+(load-file "~/.emacs.d/my-ext/sunburst.el")
+(color-theme-sunburst)
+
+(add-to-list 'load-path "~/.emacs.d/my-ext")
+(add-to-list 'load-path "~/.emacs.d/scala-mode")
+(add-to-list 'load-path "~/.emacs.d/ensime/elisp")
+
+(set-default-font "-outline-Consolas-normal-r-normal-normal-17-97-96-96-c-*-iso8859-1")
+
+;; (require 'vimpulse)
+
+;; (require 'setnu+)
+;; (setnu-mode 1)
+
+(require 'scala-mode-auto)
+(add-hook 'scala-mode-hook '(lambda () (yas/minor-mode-on)))
+(require 'sbt)
+(require  'ensime)
+(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+
+
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
+ '(current-language-environment "UTF-8")
+ '(inhibit-startup-screen t)
+ '(show-paren-mode t))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :stipple nil :background "#111" :foreground "#ddd" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 100 :width normal :foundry "microsoft" :family "Consolas")))))
+
+
 ;;; init.el ends here
+
