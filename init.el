@@ -79,14 +79,18 @@
 
 (add-to-list 'load-path "~/.emacs.d/my-ext")
 (add-to-list 'load-path "~/.emacs.d/scala-mode")
+(add-to-list 'load-path "~/.emacs.d/my-ext/yasnippet-0.6.1c")
+    (require 'yasnippet)
+    (yas/initialize)
+    (yas/load-directory "~/.emacs.d/my-ext/yasnippet-0.6.1c/snippets")
 (add-to-list 'load-path "~/.emacs.d/ensime/elisp")
 
 (set-default-font "-outline-Consolas-normal-r-normal-normal-17-97-96-96-c-*-iso8859-1")
 
-;; (require 'vimpulse)
+(require 'vimpulse)
 
-;; (require 'setnu+)
-;; (setnu-mode 1)
+(require 'setnu+)
+(if (fboundp 'setnu-mode) (setnu-mode -1))
 
 (require 'scala-mode-auto)
 (add-hook 'scala-mode-hook '(lambda () (yas/minor-mode-on)))
