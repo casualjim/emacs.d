@@ -129,7 +129,7 @@
 ;;(require 'vimpulse)
 
 (require 'setnu+)
-(if (fboundp 'setnu-mode) (setnu-mode 1))
+(add-hook 'text-mode-hook 'turn-on-setnu-mode)
 
 (require 'scala-mode-auto)
 (add-hook 'scala-mode-hook '(lambda () (yas/minor-mode-on)))

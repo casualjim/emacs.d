@@ -44,6 +44,7 @@
 (require 'hideshow)
 (require 'font-lock)
 (require 'auto-complete)
+(require 'easymenu)
 (require 'ensime-config)
 (require 'ensime-auto-complete)
 (require 'ensime-sbt)
@@ -119,6 +120,11 @@
   :type 'string
   :group 'ensime-server)
 
+(defcustom ensime-mode-key-prefix [?\C-c] 
+  "The prefix key for ensime-mode commands." 
+  :group 'ensime-mode 
+  :type 'sexp)
+
 (defvar ensime-protocol-version "0.0.1")
 
 (defvar ensime-prefer-noninteractive nil 
@@ -176,42 +182,95 @@ Do not show 'Writing..' message."
     ))
 
 
-(defvar ensime-mode-map
+
+(defvar ensime-mode-map 
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c t") 'ensime-inspect-type-at-point)
-    (define-key map (kbd "C-c p") 'ensime-inspect-package-at-point)
-    (define-key map (kbd "C-c o") 'ensime-inspect-project-package)
-    (define-key map (kbd "C-c c") 'ensime-typecheck-current-file)
-    (define-key map (kbd "C-c a") 'ensime-typecheck-all)
-    (define-key map (kbd "M-.") 'ensime-edit-definition)
-    (define-key map (kbd "M-,") 'ensime-pop-find-definition-stack)
-    (define-key map (kbd "C-x 4") 'ensime-edit-definition-other-window)
-    (define-key map (kbd "C-x 5") 'ensime-edit-definition-other-frame)
-    (define-key map (kbd "C-c C-a") 'ensime-sbt-switch)
-    (define-key map (kbd "C-c C-z") 'ensime-inf-switch)
-    (define-key map (kbd "C-c f") 'ensime-format-source)
+    (let ((prefix-map (make-sparse-keymap)))
 
-    (define-key map (kbd "C-c d d") 'ensime-db-start)
-    (define-key map (kbd "C-c d b") 'ensime-db-set-break)
-    (define-key map (kbd "C-c d u") 'ensime-db-clear-break)
-    (define-key map (kbd "C-c d s") 'ensime-db-step)
-    (define-key map (kbd "C-c d n") 'ensime-db-next)
-    (define-key map (kbd "C-c d r") 'ensime-db-run)
-    (define-key map (kbd "C-c d c") 'ensime-db-continue)
-    (define-key map (kbd "C-c d q") 'ensime-db-quit)
-    (define-key map (kbd "C-c d l") 'ensime-db-list-locals)
+      (define-key prefix-map (kbd "C-v i") 'ensime-inspect-type-at-point)
+      (define-key prefix-map (kbd "C-v p") 'ensime-inspect-package-at-point)
+      (define-key prefix-map (kbd "C-v o") 'ensime-inspect-project-package)
+      (define-key prefix-map (kbd "C-v c") 'ensime-typecheck-current-file)
+      (define-key prefix-map (kbd "C-v a") 'ensime-typecheck-all)
+      (define-key prefix-map (kbd "C-v s") 'ensime-sbt-switch)
+      (define-key prefix-map (kbd "C-v z") 'ensime-inf-switch)
+      (define-key prefix-map (kbd "C-v f") 'ensime-format-source)
 
-    (define-key map (kbd "C-c b b") 'ensime-builder-build)
-    (define-key map (kbd "C-c b r") 'ensime-builder-rebuild)
+      (define-key prefix-map (kbd "C-d d") 'ensime-db-start)
+      (define-key prefix-map (kbd "C-d b") 'ensime-db-set-break)
+      (define-key prefix-map (kbd "C-d u") 'ensime-db-clear-break)
+      (define-key prefix-map (kbd "C-d s") 'ensime-db-step)
+      (define-key prefix-map (kbd "C-d n") 'ensime-db-next)
+      (define-key prefix-map (kbd "C-d r") 'ensime-db-run)
+      (define-key prefix-map (kbd "C-d c") 'ensime-db-continue)
+      (define-key prefix-map (kbd "C-d q") 'ensime-db-quit)
+      (define-key prefix-map (kbd "C-d l") 'ensime-db-list-locals)
 
-    (define-key map [C-down-mouse-1] 'ignore)
-    (define-key map [C-up-mouse-1] 'ignore)
-    (define-key map [C-mouse-1] 'ignore)
-    (define-key map [double-mouse-1] 'ensime-mouse-1-double-click)
-    (define-key map [C-mouse-1] 'ensime-control-mouse-1-single-click)
+      (define-key prefix-map (kbd "C-r r") 'ensime-refactor-rename)
+      (define-key prefix-map (kbd "C-r o") 'ensime-refactor-organize-imports)
+      (define-key prefix-map (kbd "C-r l") 'ensime-refactor-extract-local)
+      (define-key prefix-map (kbd "C-r m") 'ensime-refactor-extract-method)
+      (define-key prefix-map (kbd "C-r i") 'ensime-refactor-inline-local)
+
+      (define-key prefix-map (kbd "C-b b") 'ensime-builder-build)
+      (define-key prefix-map (kbd "C-b r") 'ensime-builder-rebuild)
+
+      (define-key map ensime-mode-key-prefix prefix-map)
+
+      ;; Prefix-less shortcuts bindings...
+      (define-key map (kbd "M-.") 'ensime-edit-definition)
+      (define-key map (kbd "M-,") 'ensime-pop-find-definition-stack)
+
+      (define-key map [C-down-mouse-1] 'ignore)
+      (define-key map [C-up-mouse-1] 'ignore)
+      (define-key map [C-mouse-1] 'ignore)
+      (define-key map [double-mouse-1] 'ensime-mouse-1-double-click)
+      (define-key map [C-mouse-1] 'ensime-control-mouse-1-single-click))
+
     map)
-  "Keymap for `ensime-mode'.")
+  "Keymap for ENSIME mode."
+  )
 
+(easy-menu-define ensime-mode-menu ensime-mode-map
+  "Menu for ENSIME mode"
+  '("ENSIME"
+    ("Build"
+     ["Build project" ensime-builder-build]
+     ["Rebuild project" ensime-builder-rebuild])
+    ("Test")
+    ("Source"
+     ["Format source" ensime-format-source]
+     ["Inspect type" ensime-inspect-type-at-point]
+     ["Inspect enclosing package" ensime-inspect-package-at-point]
+     ["Inspect project package" ensime-inspect-project-package]
+     ["Typecheck file" ensime-typecheck-current-file]
+     ["Typecheck project" ensime-typecheck-all])
+    ("Refactor"
+     ["Organize imports" ensime-refactor-organize-imports]
+     ["Rename" ensime-refactor-rename]
+     ["Extract local val" ensime-refactor-extract-local]
+     ["Extract method" ensime-refactor-extract-method]
+     ["Inline local val" ensime-refactor-inline-local])
+    ("Navigation"
+     ["Lookup definition" ensime-edit-definition]
+     ["Lookup definition in other window" ensime-edit-definition-other-window]
+     ["Lookup definition in other frame" ensime-edit-definition-other-frame]
+     ["Pop definition stack" ensime-pop-find-definition-stack]
+     )
+    ("Debugger"
+     ["Start" ensime-db-start]
+     ["Set break point" ensime-db-set-break]
+     ["Clear breakpoint" ensime-db-clear-break]
+     ["Step" ensime-db-step]
+     ["Next" ensime-db-next]
+     ["Run" ensime-db-run]
+     ["Continue" ensime-db-continue]
+     ["Quit" ensime-db-quit]
+     ["List local variables" ensime-db-list-locals])
+    "---"
+    ["Go to SBT console" ensime-sbt-switch]
+    ["Go to Scala REPL" ensime-inf-switch]
+    ))
 
 (define-minor-mode ensime-mode
   "ENSIME: The ENhanced Scala Interaction Mode for Emacs (minor-mode).
@@ -223,6 +282,7 @@ Do not show 'Writing..' message."
   (if ensime-mode
       (progn
 	(ensime-ac-enable)
+        (easy-menu-add ensime-mode-menu ensime-mode-map)
 	(add-hook 'after-save-hook 'ensime-run-after-save-hooks nil t)
 	(add-hook 'ensime-source-buffer-saved-hook 'ensime-typecheck-current-file)
 	(add-hook 'ensime-source-buffer-saved-hook 'ensime-builder-track-changed-files)
@@ -261,10 +321,7 @@ Do not show 'Writing..' message."
    inspect that package. Otherwise, try to inspect the type
    of the thing at point."
   (interactive "e")
-  (let ((pack-path (ensime-package-path-at-point)))
-    (if pack-path
-	(ensime-inspect-package-by-path pack-path)
-      (ensime-inspect-type-at-point))))
+  (ensime-inspect-type-at-point))
 
 (defun ensime-mouse-motion (event)
   "Command handler for mouse movement events in `ensime-mode-map'."
@@ -340,23 +397,24 @@ Do not show 'Writing..' message."
   (let ((conn (ensime-current-connection)))
     ;; Bail out early in case there's no connection, so we won't
     ;; implicitly invoke `ensime-connection' which may query the user.
-    (if (not conn)
-	(and ensime-mode " ENSIME")
-      (let ((local (eq conn ensime-buffer-connection)))
-	(concat " "
-		(if local "{" "[")
-		(ignore-errors (ensime-connection-name conn))
-		(ensime-modeline-state-string conn)
-		(if local "}" "]"))))))
+    (if (and ensime-mode (not conn))
+	" [ENSIME: No Connection]"
+      (concat " "
+	      "[ENSIME: "
+	      (or (plist-get (ensime-config conn) :project-name)
+		  "Connected")
+	      (when-let (status (ensime-modeline-state-string conn))
+		(concat " (" status ")"))
+	      "]"))))
 
 
 (defun ensime-modeline-state-string (conn)
   "Return a string possibly describing CONN's state."
   (cond ((not (eq (process-status conn) 'open))
-	 (format " %s" (process-status conn)))
+	 (format "%s" (process-status conn)))
 	((let ((pending (length (ensime-rex-continuations conn))))
 	   (cond ((zerop pending) nil)
-		 (t (format " %s" pending)))))))
+		 (t (format "%s" pending)))))))
 
 ;; Startup
 
@@ -1723,8 +1781,7 @@ This idiom is preferred over `lexical-let'."
     "Hack and be merry!"
     "Your hacking starts... NOW!"
     "May the source be with you!"
-    "Take this REPL, brother, and may it serve you well."
-    "Lemonodor-fame is but a hack away!"
+    "Death to null!"
     ,(format "%s, this could be the start of a beautiful program."
 	     (ensime-user-first-name)))
   "Scientifically-proven optimal words of hackerish encouragement.")
@@ -2049,6 +2106,10 @@ with the current project's dependencies loaded. Returns a property list."
   (ensime-eval 
    `(swank:type-by-name ,name)))
 
+(defun ensime-rpc-get-type-by-name-at-point (name)
+  (ensime-eval 
+   `(swank:type-by-name-at-point ,name ,buffer-file-name ,(ensime-computed-point))))
+
 (defun ensime-rpc-get-type-at-point ()
   (ensime-eval 
    `(swank:type-at-point ,buffer-file-name ,(ensime-computed-point))))
@@ -2230,67 +2291,76 @@ If is-obj is non-nil, use an alternative color for the link."
   "Display a list of all the members of the type under point, sorted by
    owner type."
   (interactive)
-  (let* ((imported-type-path (ensime-imported-type-path-at-point))
-	 (imported-type (when imported-type-path 
-			  (ensime-rpc-get-type-by-name imported-type-path)))
-	 (inspect-info (if imported-type
-			   (ensime-rpc-inspect-type-by-id 
-			    (ensime-type-id imported-type))
-			 (ensime-rpc-inspect-type-at-point))))
-    (ensime-type-inspector-show inspect-info)))
+  (let ((pack-path (ensime-package-path-at-point)))
+
+    ;; inspect package if package under point
+    (if pack-path (ensime-inspect-package-by-path pack-path)
+
+      (let* ((imported-type-path (ensime-imported-type-path-at-point))
+	     (imported-type (when imported-type-path 
+			      (ensime-rpc-get-type-by-name-at-point imported-type-path)))
+	     (inspect-info (if imported-type
+			       ;; otherwise, if imported type under point
+			       (ensime-rpc-inspect-type-by-id (ensime-type-id imported-type))
+
+			     ;; otherwise do normal type inspection
+			     (ensime-rpc-inspect-type-at-point))))
+	(ensime-type-inspector-show inspect-info)))))
 
 (defun ensime-type-inspector-show (info)
   "Display a list of all the members of the type under point, sorted by
    owner type."
-  (let* ((interfaces (plist-get info :interfaces))
-	 (type (plist-get info :type))
-	 (companion-id (plist-get info :companion-id))
-	 (buffer-name ensime-inspector-buffer-name)
-	 (ensime-indent-level 0))
-    (ensime-with-inspector-buffer 
-     (buffer-name info t)
+  (if (null info)
+      (message "Cannot inspect nil type.")
+    (let* ((interfaces (plist-get info :interfaces))
+	   (type (plist-get info :type))
+	   (companion-id (plist-get info :companion-id))
+	   (buffer-name ensime-inspector-buffer-name)
+	   (ensime-indent-level 0))
+      (ensime-with-inspector-buffer 
+       (buffer-name info t)
 
-     ;; We want two main columns. The first, 20 chars wide.
-     (let ((tab-stop-list '(20)))
-       (setq wrap-prefix (make-string 21 ?\s))
+       ;; We want two main columns. The first, 20 chars wide.
+       (let ((tab-stop-list '(20)))
+	 (setq wrap-prefix (make-string 21 ?\s))
 
-       ;; Display main type
-       (let* ((full-type-name (plist-get type :name)))
-	 (ensime-insert-with-face (format "%s\n" 
-					  (ensime-declared-as-str type))
-				  font-lock-comment-face)
-	 (ensime-inspector-insert-linked-type type t t)
-	 (insert "\n")
+	 ;; Display main type
+	 (let* ((full-type-name (plist-get type :name)))
+	   (ensime-insert-with-face (format "%s\n" 
+					    (ensime-declared-as-str type))
+				    font-lock-comment-face)
+	   (ensime-inspector-insert-linked-type type t t)
+	   (insert "\n")
 
-	 ;; Insert a link to the companion object or class, if extant
-	 (when-let (id companion-id)
-	   (ensime-inspector-insert-link-to-type-id 
-	    "(companion)" id 
-	    (not (ensime-type-is-object-p type))))
+	   ;; Insert a link to the companion object or class, if extant
+	   (when-let (id companion-id)
+	     (ensime-inspector-insert-link-to-type-id 
+	      "(companion)" id 
+	      (not (ensime-type-is-object-p type))))
 
-	 ;; Display each member, arranged by owner type
-	 (dolist (interface interfaces)
-	   (let* ((owner-type (plist-get interface :type))
-		  (implicit (plist-get interface :via-view))
-		  (members (plist-get owner-type :members)))
+	   ;; Display each member, arranged by owner type
+	   (dolist (interface interfaces)
+	     (let* ((owner-type (plist-get interface :type))
+		    (implicit (plist-get interface :via-view))
+		    (members (plist-get owner-type :members)))
 
-	     (ensime-insert-with-face 
-	      (format "\n\n%s%s\n" 
-		      (ensime-declared-as-str owner-type)
-		      (if implicit (concat " (via implicit, " implicit ")") ""))
-	      font-lock-comment-face)
-	     (ensime-inspector-insert-linked-type owner-type t t)
-	     (insert "\n")
-	     (insert "---------------------------\n")
-	     (dolist (m members)
-	       (ensime-inspector-insert-linked-member owner-type m)
+	       (ensime-insert-with-face 
+		(format "\n\n%s%s\n" 
+			(ensime-declared-as-str owner-type)
+			(if implicit (concat " (via implicit, " implicit ")") ""))
+		font-lock-comment-face)
+	       (ensime-inspector-insert-linked-type owner-type t t)
 	       (insert "\n")
-	       )
-	     ))
+	       (insert "---------------------------\n")
+	       (dolist (m members)
+		 (ensime-inspector-insert-linked-member owner-type m)
+		 (insert "\n")
+		 )
+	       ))
 
-	 (goto-char (point-min))
-	 ))
-     )))
+	   (goto-char (point-min))
+	   ))
+       ))))
 
 
 
@@ -2351,7 +2421,7 @@ read a fully qualified path from the minibuffer."
 (defun ensime-package-path-at-point ()
   "Return the package path at point, or nil if point is not in a package path."
   (let* ((case-fold-search nil)
-	 (re "\\(?:package\\|import\\)[ ]+\\(\\(?:[a-z0-9_]+\\.\\)+[a-z0-9_]+\\)"))
+	 (re "\\(?:package\\|import\\)[ ]+\\(\\(?:[a-z][a-z0-9_]+\\.\\)+[a-z][a-z0-9]+\\)"))
     (save-excursion
       (catch 'return
 	(let ((init-point (point))
@@ -2384,7 +2454,7 @@ read a fully qualified path from the minibuffer."
 		   (beginning-of-line)
 		   (search-forward-regexp
 		    (concat
-		     "^import \\(\\(?:[a-z0-9_]+\\.\\)*\\)"
+		     "^\\s-*import \\(\\(?:[a-z0-9_]+\\.\\)*\\)"
 		     "\\(?:[A-Z][A-z0-9_\\.]+\\|{[A-z0-9_\\., \n]+}\\)$")
 		    (point-at-eol) t)))
 	(let ((path (ensime-kill-txt-props (match-string 1))))
@@ -2431,13 +2501,15 @@ inspect the package of the current source file."
 
 (defun ensime-package-inspector-show (info)
   "Display a list of all the members of the provided package."
-  (let* ((buffer-name ensime-inspector-buffer-name)
-	 (ensime-indent-level 0))
-    (ensime-with-inspector-buffer
-     (buffer-name info t)
-     (ensime-inspector-insert-package info)
-     (goto-char (point-min))
-     )))
+  (if (null info)
+      (message "Cannot inspect nil package.")
+    (let* ((buffer-name ensime-inspector-buffer-name)
+	   (ensime-indent-level 0))
+      (ensime-with-inspector-buffer
+       (buffer-name info t)
+       (ensime-inspector-insert-package info)
+       (goto-char (point-min))
+       ))))
 
 (defvar ensime-inspector-history '()
   "Maintain a history of the info objects viewed in the inspector buffer.")
