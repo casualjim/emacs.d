@@ -55,7 +55,7 @@
 (require 'starter-kit-registers)
 (require 'starter-kit-eshell)
 (require 'starter-kit-lisp)
-(require 'starter-kit-perl)
+;;(require 'starter-kit-perl)
 (require 'starter-kit-ruby)
 (require 'starter-kit-js)
 
@@ -73,6 +73,45 @@
 (if (file-exists-p user-specific-dir)
   (mapc #'load (directory-files user-specific-dir nil ".*el$")))
 
+;; Load CEDET.
+;; See cedet/common/cedet.info for configuration details.
+(load-file "~/.emacs.d/my-ext/cedet-1.0pre6/common/cedet.el")
+
+
+;; Enable EDE (Project Management) features
+(global-ede-mode 1)
+
+;; el-get
+
+(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+(require 'el-get)
+
+(setq el-get-sources
+    '( pov-mode vimpulse)
+)
+
+(el-get 'sync)
+(ido-mode)
+
+(tool-bar-mode)
+
+;; reload file keep at position
+(defun reload-file ()
+  (interactive)
+  (let ((curr-scroll (window-vscroll)))
+    (find-file (buffer-name))
+    (set-window-vscroll nil curr-scroll)
+    (message "Reloaded file")))
+ 
+(global-set-key "\C-c\C-r" 'reload-file)
+
+(fset 'yes-or-no-p 'y-or-n-p)
+(require 'recentf)
+(recentf-mode 1)
+;; recent files
+(global-set-key (kbd "M-o M-r") 'recentf-open-files)
+
+
 (require 'color-theme)
 (load-file "~/.emacs.d/my-ext/sunburst.el")
 (color-theme-sunburst)
@@ -87,33 +126,30 @@
 
 (set-default-font "-outline-Consolas-normal-r-normal-normal-17-97-96-96-c-*-iso8859-1")
 
-(require 'vimpulse)
+;;(require 'vimpulse)
 
 (require 'setnu+)
-(if (fboundp 'setnu-mode) (setnu-mode -1))
+(if (fboundp 'setnu-mode) (setnu-mode 1))
 
 (require 'scala-mode-auto)
 (add-hook 'scala-mode-hook '(lambda () (yas/minor-mode-on)))
 (require 'sbt)
 (require  'ensime)
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
-(require 'sr-speedbar)
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(column-number-mode t)
- '(current-language-environment "UTF-8")
- '(inhibit-startup-screen t)
- '(inhibit-read-only t)
- '(show-paren-mode t))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "#111" :foreground "#ddd" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 100 :width normal :foundry "microsoft" :family "Consolas")))))
+;;
+;; window movement etc {{{
+(global-set-key (kbd "M-J") 'windmove-down)
+(global-set-key (kbd "M-H") 'windmove-left)
+(global-set-key (kbd "M-K") 'windmove-up)
+(global-set-key (kbd "M-L") 'windmove-right)
+(global-set-key (kbd "M-Q") 'delete-window)
+(global-set-key (kbd "M-R") 'save-buffer)
+(global-set-key (kbd "<S-return>") (lambda () (interactive) (move-end-of-line nil) (newline)))
+(global-set-key (kbd "M-p") (lambda () (interactive) (save-buffer) (blender-execute-file (buffer-file-name))))
+
+
+;; }}}
+
 
 
 ;;; init.el ends here
