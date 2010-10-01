@@ -136,6 +136,8 @@
 (require 'sbt)
 (require  'ensime)
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+'(inhibit-read-only t)
+(require 'sr-speedbar)
 ;;
 ;; window movement etc {{{
 (global-set-key (kbd "M-J") 'windmove-down)
