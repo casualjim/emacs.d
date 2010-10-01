@@ -97,8 +97,7 @@
 (require 'sbt)
 (require  'ensime)
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
-
-
+(require 'sr-speedbar)
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
@@ -107,6 +106,7 @@
  '(column-number-mode t)
  '(current-language-environment "UTF-8")
  '(inhibit-startup-screen t)
+ '(inhibit-read-only t)
  '(show-paren-mode t))
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
