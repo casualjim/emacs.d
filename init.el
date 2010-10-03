@@ -113,8 +113,9 @@
 
 
 (require 'color-theme)
-(load-file "~/.emacs.d/my-ext/sunburst.el")
-(color-theme-sunburst)
+;(load-file "~/.emacs.d/my-ext/sunburst.el")
+;(color-theme-sunburst)
+(color-theme-twilight)
 
 (add-to-list 'load-path "~/.emacs.d/my-ext")
 (add-to-list 'load-path "~/.emacs.d/scala-mode")
@@ -138,6 +139,7 @@
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
 '(inhibit-read-only t)
 (require 'sr-speedbar)
+
 ;;
 ;; window movement etc {{{
 (global-set-key (kbd "M-J") 'windmove-down)
