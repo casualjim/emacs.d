@@ -139,6 +139,15 @@
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
 '(inhibit-read-only t)
 (require 'sr-speedbar)
+(require 'protobuf-mode)
+
+(defconst mojolly-protobuf-style
+  '((c-basic-offset . 2)
+    (indent-tabs-mode . nil)))
+
+(add-hook 'protobuf-mode-hook
+  (lambda () (c-add-style "mojolly-style" mojolly-protobuf-style t)))
+
 
 ;;
 ;; window movement etc {{{
