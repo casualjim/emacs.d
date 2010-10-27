@@ -20,6 +20,11 @@
 ;;     MA 02111-1307, USA.
 
 
+(defgroup ensime-db nil
+  "Customization of ensime debugger support."
+  :group 'ensime
+  :prefix 'ensime-db)
+
 (defcustom ensime-db-cmd-template 
   '("jdb" "-classpath" :classpath "-sourcepath" :sourcepath :debug-class :debug-args)
   "The command to launch the debugger. Keywords will be replaced
@@ -407,9 +412,11 @@ their values."
 the current project's dependencies. Returns list of form (cmd [arg]*)"
   (if (ensime-connected-p)
       (let* ((conf (ensime-rpc-debug-config))
-	     (debug-class (read-string 
-			   "Qualified name of class to debug: "
-			   ensime-db-default-main-class))
+	     (debug-class 
+	      (ensime-strip-dollar-signs
+	       (ensime-completing-read-path 
+		"Qualified name of class to debug: "
+		ensime-db-default-main-class)))
 	     (debug-args (read-string 
 			  "Commandline arguments: "
 			  ensime-db-default-main-args)))

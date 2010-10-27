@@ -187,7 +187,8 @@
   "Protocol Buffers Mode Commands"
   (cons "Protocol Buffers" (c-lang-const c-mode-menu protobuf)))
 
-;;;###autoload (add-to-list 'auto-mode-alist '("\\.proto\\'" . protobuf-mode))
+;;;###autoload 
+(add-to-list 'auto-mode-alist '("\\.proto\\'" . protobuf-mode))
 
 ;;;###autoload
 (defun protobuf-mode ()
