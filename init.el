@@ -31,6 +31,9 @@
 (setq custom-file (concat dotfiles-dir "custom.el"))
 
 (require 'package)
+(dolist (source '(("marmalade" . "http://marmalade-repo.org/packages/")
+                  ("elpa" . "http://tromey.com/elpa/")))
+  (add-to-list 'package-archives source t))
 (package-initialize)
 (require 'starter-kit-elpa)
 
@@ -69,9 +72,9 @@
 (add-to-list 'load-path user-specific-dir)
 
 (if (file-exists-p system-specific-config) (load system-specific-config))
-(if (file-exists-p user-specific-config) (load user-specific-config))
 (if (file-exists-p user-specific-dir)
   (mapc #'load (directory-files user-specific-dir nil ".*el$")))
+(if (file-exists-p user-specific-config) (load user-specific-config))
 
 ;; Load CEDET.
 ;; See cedet/common/cedet.info for configuration details.
