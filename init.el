@@ -48,7 +48,7 @@
 (require 'recentf)
 
 ;; backport some functionality to Emacs 22 if needed
-(require 'dominating-file)
+;;(require 'dominating-file)
 
 ;; Load up starter kit customizations
 
@@ -78,22 +78,22 @@
 
 ;; Load CEDET.
 ;; See cedet/common/cedet.info for configuration details.
-(load-file "~/.emacs.d/my-ext/cedet-1.0pre6/common/cedet.el")
+;;(load-file "~/.emacs.d/my-ext/cedet-1.0pre6/common/cedet.el")
 
 
 ;; Enable EDE (Project Management) features
-(global-ede-mode 1)
+;;(global-ede-mode 1)
 
 ;; el-get
 
-(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
-(require 'el-get)
+;(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+;(require 'el-get)
 
 ;(setq el-get-sources
     ;'( pov-mode vimpulse)
 ;)
 
-(el-get 'sync)
+;(el-get 'sync)
 (ido-mode)
 
 (tool-bar-mode)
@@ -130,7 +130,7 @@
     (yas/load-directory "~/.emacs.d/my-ext/yasnippet-0.6.1c/snippets")
 (add-to-list 'load-path "~/.emacs.d/ensime/elisp")
 
-(set-default-font "-outline-Consolas-normal-r-normal-normal-17-97-96-96-c-*-iso8859-1")
+(set-default-font "-outline-Consolas-normal-r-normal-normal-13-97-96-96-c-*-iso8859-1")
 
 ;;(require 'vimpulse)
 
