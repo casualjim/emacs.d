@@ -55,6 +55,7 @@
 (require 'ensime-undo)
 (require 'ensime-search)
 (require 'ensime-doc)
+(require 'ensime-semantic-highlight)
 (eval-when (compile)
   (require 'apropos)
   (require 'compile))
@@ -134,7 +135,7 @@
   :group 'ensime-mode
   :type 'sexp)
 
-(defvar ensime-protocol-version "0.0.1")
+(defvar ensime-protocol-version "0.7")
 
 (defvar ensime-prefer-noninteractive nil
   "State variable used for regression testing.")
@@ -180,6 +181,9 @@ argument is supplied) is a .scala or .java file."
 (defvar ensime-source-buffer-saved-hook nil
   "Hook called whenever an ensime source buffer is saved.")
 
+(defvar ensime-source-buffer-loaded-hook nil
+  "Hook called whenever an ensime source buffer is loaded.")
+
 (defun ensime-run-after-save-hooks ()
   "Things to run whenever a source buffer is saved."
   (condition-case err-info
@@ -187,6 +191,15 @@ argument is supplied) is a .scala or .java file."
     (error
      (message
       "Error running ensime-source-buffer-saved-hook: %s"
+      err-info))))
+
+(defun ensime-run-find-file-hooks ()
+  "Things to run whenever a source buffer is opened."
+  (condition-case err-info
+      (run-hooks 'ensime-source-buffer-loaded-hook)
+    (error
+     (message
+      "Error running ensime-source-buffer-loaded-hook: %s"
       err-info))))
 
 (defun ensime-save-buffer-no-hooks ()
@@ -348,11 +361,23 @@ Do not show 'Writing..' message."
       (progn
         (ensime-ac-enable)
         (easy-menu-add ensime-mode-menu ensime-mode-map)
+
         (add-hook 'after-save-hook 'ensime-run-after-save-hooks nil t)
+
+	(add-hook 'find-file-hook 'ensime-run-find-file-hooks nil t)
+
         (add-hook 'ensime-source-buffer-saved-hook
                   'ensime-typecheck-current-file)
+
         (add-hook 'ensime-source-buffer-saved-hook
-                  'ensime-builder-track-changed-files)
+                  'ensime-builder-track-changed-files t)
+
+        (add-hook 'ensime-source-buffer-saved-hook
+                  'ensime-sem-high-refresh-hook t)
+
+        (add-hook 'ensime-source-buffer-loaded-hook
+                  'ensime-sem-high-refresh-hook t)
+
         (when ensime-tooltip-hints
           (add-hook 'tooltip-functions 'ensime-tooltip-handler)
           (make-local-variable 'track-mouse)
@@ -365,10 +390,21 @@ Do not show 'Writing..' message."
     (progn
       (ensime-ac-disable)
       (remove-hook 'after-save-hook 'ensime-run-after-save-hooks t)
+
+      (remove-hook 'find-file-hook 'ensime-run-find-file-hooks t)
+
       (remove-hook 'ensime-source-buffer-saved-hook
                    'ensime-typecheck-current-file)
+
       (remove-hook 'ensime-source-buffer-saved-hook
                    'ensime-builder-track-changed-files)
+
+      (remove-hook 'ensime-source-buffer-saved-hook
+                   'ensime-sem-high-refresh-hook)
+
+      (remove-hook 'ensime-source-buffer-loaded-hook
+                   'ensime-sem-high-refresh-hook)
+
       (remove-hook 'tooltip-functions 'ensime-tooltip-handler)
       (make-local-variable 'track-mouse)
       (setq track-mouse nil))))
@@ -1476,35 +1512,60 @@ overrides `ensime-buffer-connection'.")
 	  (t conn))))
 
 
-(defun ensime-connections-for-source-file (file)
+(defun ensime-connection-visiting-buffers (conn)
+  "Return a list of all buffers associated with the given 
+ connection."
+  (let ((result '()))
+    (dolist (buf (buffer-list))
+      (let ((f (buffer-file-name buf)))
+	(when (and f (ensime-file-belongs-to-connection-p
+		      f conn))
+	  (setq result (cons buf result)))))
+    result))
+
+
+(defun ensime-file-belongs-to-connection-p (file-in conn)
+  "Does the given file belong to the given connection(project)?"
+  (let* ((file (file-truename file-in))
+	 (config (ensime-config conn))
+	 (source-roots (plist-get config :source-roots)))
+    (catch 'return
+      (dolist (dir source-roots)
+	(when (ensime-file-in-directory-p file dir)
+	  (throw 'return t))))))
+
+
+(defun ensime-connections-for-source-file (file-in)
   "Return the connections corresponding to projects that contain
    the given file in their source trees."
-  (when file
-    (let ((result '()))
-      (dolist (p ensime-net-processes)
-	(let* ((config (ensime-config p))
-	       (source-roots (plist-get config :source-roots)))
-	  (dolist (dir source-roots)
-	    (when (ensime-file-in-directory-p file dir)
-	      (setq result (cons p result))))))
-      result)))
+  (let ((file (file-truename file-in)))
+    (when file
+      (let ((result '()))
+	(dolist (p ensime-net-processes)
+	  (let* ((config (ensime-config p))
+		 (source-roots (plist-get config :source-roots)))
+	    (dolist (dir source-roots)
+	      (when (ensime-file-in-directory-p file dir)
+		(setq result (cons p result))))))
+	result))))
 
 
-(defun ensime-owning-connection-for-source-file (file)
+(defun ensime-owning-connection-for-source-file (file-in)
   "Return the connection corresponding to the single
  that owns the given file. "
-  (when file
-    (catch 'return
+  (let ((file (file-truename file-in)))
+    (when file
+      (catch 'return
 
-      ;; First check individual source-roots
-      (dolist (p ensime-net-processes)
-	(let* ((config (ensime-config p))
-	       (source-roots (plist-get config :source-roots)))
-	  (dolist (dir source-roots)
-	    (when (ensime-file-in-directory-p file dir)
-	      (throw 'return p)))))
+	;; First check individual source-roots
+	(dolist (p ensime-net-processes)
+	  (let* ((config (ensime-config p))
+		 (source-roots (plist-get config :source-roots)))
+	    (dolist (dir source-roots)
+	      (when (ensime-file-in-directory-p file dir)
+		(throw 'return p)))))
 
-      )))
+	))))
 
 
 (defun ensime-prompt-for-connection ()
@@ -1600,39 +1661,23 @@ If PROCESS is not specified, `ensime-connection' is used.
   "Initialize CONNECTION with INFO received from Lisp."
   (ensime-event-sig :connected info)
   (let ((ensime-dispatching-connection connection))
-    (destructuring-bind (&key pid style server-implementation machine
-			      features package version modules
+    (destructuring-bind (&key pid server-implementation version
 			      &allow-other-keys) info
       (ensime-check-version version connection)
-      (setf (ensime-pid) pid
-	    (ensime-communication-style) style
-	    (ensime-server-features) features)
-      (destructuring-bind (&key type name version program) server-implementation
-	(setf (ensime-server-implementation-type) type
-	      (ensime-server-implementation-version) version
-	      (ensime-server-implementation-name) name
-	      (ensime-server-implementation-program) program
+      (setf (ensime-pid) pid)
+      (destructuring-bind (&key name) server-implementation
+	(setf (ensime-server-implementation-name) name
 	      (ensime-connection-name) (ensime-generate-connection-name name)))
-      (destructuring-bind (&key instance type version) machine
-	(setf (ensime-machine-instance) instance)))
-    (let ((args (when-let (p (ensime-server-process))
-		  (ensime-inferior-server-args p))))
-      (when-let (name (plist-get args :name))
-	(unless (string= (ensime-server-implementation-name) name)
-	  (setf (ensime-connection-name)
-		(ensime-generate-connection-name (symbol-name name)))))
-      ;; TODO
-      ;;(ensime-load-contribs)
-      (run-hooks 'ensime-connected-hook)
-      (when-let (fun (plist-get args ':init-function))
-	(funcall fun)))
+      ))
 
-    (message "Connected.")
+  (run-hooks 'ensime-connected-hook)
+  (message "Connected.")
 
-    ;; Send the project initialization..
-    (let ((config (ensime-config connection)))
-      (ensime-init-project connection config))
-    ))
+  ;; Send the project initialization..
+  (let ((config (ensime-config connection)))
+    (ensime-init-project connection config))
+
+  )
 
 
 (defun ensime-init-project (conn config)
@@ -1873,8 +1918,7 @@ This idiom is preferred over `lexical-let'."
 	   (ensime-event-sig :full-typecheck-finished val))
 
 	  ((:compiler-ready status)
-	   (message "ENSIME ready. %s" (ensime-random-words-of-encouragement))
-	   (setf (ensime-analyzer-ready process) t)
+	   (ensime-handle-compiler-ready status)
 	   (ensime-event-sig :compiler-ready status))
 
 	  ((:indexer-ready status)
@@ -1932,6 +1976,16 @@ This idiom is preferred over `lexical-let'."
   (ensime-net-send sexp (ensime-connection)))
 
 
+(defun ensime-handle-compiler-ready (status)
+  "Do any work that should be done the first time the analyzer becomes
+ ready for requests."
+  (let ((conn (ensime-current-connection)))
+    (message "ENSIME ready. %s" (ensime-random-words-of-encouragement))
+    (setf (ensime-analyzer-ready conn) t)
+    (let ((bufs (ensime-connection-visiting-buffers conn)))
+      (dolist (buf bufs)
+	(ensime-sem-high-refresh-buffer buf)))
+    ))
 
 ;;; Words of encouragement
 
@@ -2523,6 +2577,7 @@ any buffer visiting the given file."
  managing projects that contains the current file. File is saved
  first if it has unwritten modifications."
   (interactive)
+
   (if (buffer-modified-p) (ensime-write-buffer nil t))
 
   ;; Send the reload requist to all servers that might be interested.
@@ -2879,14 +2934,14 @@ with the current project's dependencies loaded. Returns a property list."
   (ensime-eval
    `(swank:exec-undo ,id)))
 
-(defun ensime-rpc-refactor-perform
+(defun ensime-rpc-refactor-prepare
   (proc-id refactor-type params non-interactive continue blocking)
   (if blocking
       (ensime-eval
-       `(swank:perform-refactor
+       `(swank:prepare-refactor
 	 ,proc-id ,refactor-type ,params ,(not non-interactive)))
     (ensime-eval-async
-     `(swank:perform-refactor
+     `(swank:prepare-refactor
        ,proc-id ,refactor-type ,params ,(not non-interactive)) continue)))
 
 (defun ensime-rpc-refactor-exec (proc-id refactor-type continue)
@@ -2895,9 +2950,13 @@ with the current project's dependencies loaded. Returns a property list."
 (defun ensime-rpc-refactor-cancel (proc-id)
   (ensime-eval-async `(swank:cancel-refactor ,proc-id) #'identity))
 
+
 (defun ensime-rpc-shutdown-server ()
   (ensime-eval `(swank:shutdown-server)))
 
+(defun ensime-rpc-symbol-designations (file start end requested-types continue)
+  (ensime-eval-async `(swank:symbol-designations ,file ,start ,end ,requested-types)
+		     continue))
 
 
 ;; Uses UI

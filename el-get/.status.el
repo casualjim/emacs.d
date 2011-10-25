@@ -1,0 +1,1 @@
+(:pov-mode "installed" :vimpulse "installed")
