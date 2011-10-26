@@ -38,7 +38,7 @@
      (border-glyph ((t (nil))))
      (buffers-tab ((t (:background "black" :foreground "white"))))
      (font-lock-builtin-face ((t (:foreground "white"))))
-     (font-lock-comment-face ((t (:foreground "#7CCD7C"))))
+     (font-lock-comment-face ((t (:foreground "#6b6b6b"))))
      (font-lock-constant-face ((t (:foreground "#FA8072"))))
      (font-lock-doc-string-face ((t (:foreground "DarkOrange"))))
      (font-lock-function-name-face ((t (:foreground "#87CEEB"))))
@@ -49,7 +49,7 @@
      (font-lock-regexp-grouping-backslash ((t (:foreground "#E9C062"))))
      (font-lock-regexp-grouping-construct ((t (:foreground "red"))))
  
-     (font-lock-string-face ((t (:foreground "#CD5C5C"))))
+     (font-lock-string-face ((t (:foreground "#7CCD7C"))))
      (font-lock-type-face ((t (:foreground "#86CEFA"))))
      (font-lock-variable-name-face ((t (:foreground "#EEDC82"))))
      (font-lock-warning-face ((t (:bold t :foreground "Pink"))))

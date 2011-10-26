@@ -22,9 +22,9 @@
 
 (defvar ensime-sem-high-faces
   '(
-   (var . (:foreground "#f884ce"))
+   (var . font-lock-variable-name-face)
    (val . (:foreground "#acecf8"))
-   (varField . (:foreground "#f884ce"))
+   (varField . (:foreground "#b4eb6d"))
    (valField . (:foreground "#acecf8"))
    (functionCall . (:foreground "#f8ebac"))
    (operator . (:foreground "#bbbbbb"))
