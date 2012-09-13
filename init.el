@@ -134,8 +134,10 @@
 
 ;;(require 'vimpulse)
 
-(require 'setnu+)
-(add-hook 'text-mode-hook 'turn-on-setnu-mode)
+;; Always show line numbers
+(global-linum-mode 1)
+;;(require 'setnu+)
+;;(add-hook 'text-mode-hook 'turn-on-setnu-mode)
 
 (require 'scala-mode-auto)
 (add-hook 'scala-mode-hook '(lambda () (yas/minor-mode-on)))
