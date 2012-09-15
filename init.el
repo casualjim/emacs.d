@@ -11,8 +11,8 @@
 
 ;; Turn off mouse interface early in startup to avoid momentary display
 ;; You really don't need these; trust me.
-;;(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
-(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+; (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+; (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
 ;; Load path etc.
@@ -24,46 +24,11 @@
 
 (add-to-list 'load-path dotfiles-dir)
 
-(add-to-list 'load-path (concat dotfiles-dir "/elpa-to-submit"))
-
-(setq autoload-file (concat dotfiles-dir "loaddefs.el"))
-(setq package-user-dir (concat dotfiles-dir "elpa"))
-(setq custom-file (concat dotfiles-dir "custom.el"))
-
 (require 'package)
 (dolist (source '(("marmalade" . "http://marmalade-repo.org/packages/")
                   ("elpa" . "http://tromey.com/elpa/")))
   (add-to-list 'package-archives source t))
 (package-initialize)
-(require 'starter-kit-elpa)
-
-;; These should be loaded on startup rather than autoloaded on demand
-;; since they are likely to be used in every session
-
-(require 'cl)
-(require 'saveplace)
-(require 'ffap)
-(require 'uniquify)
-(require 'ansi-color)
-(require 'recentf)
-
-;; backport some functionality to Emacs 22 if needed
-;;(require 'dominating-file)
-
-;; Load up starter kit customizations
-
-(require 'starter-kit-defuns)
-(require 'starter-kit-bindings)
-(require 'starter-kit-misc)
-(require 'starter-kit-registers)
-(require 'starter-kit-eshell)
-(require 'starter-kit-lisp)
-;;(require 'starter-kit-perl)
-(require 'starter-kit-ruby)
-(require 'starter-kit-js)
-
-(regen-autoloads)
-(load custom-file 'noerror)
 
 ;; You can keep system- or user-specific customizations here
 (setq system-specific-config (concat dotfiles-dir system-name ".el")
@@ -76,120 +41,52 @@
   (mapc #'load (directory-files user-specific-dir nil ".*el$")))
 (if (file-exists-p user-specific-config) (load user-specific-config))
 
-;; Load CEDET.
-;; See cedet/common/cedet.info for configuration details.
-;;(load-file "~/.emacs.d/my-ext/cedet-1.0pre6/common/cedet.el")
-
-
-;; Enable EDE (Project Management) features
-;;(global-ede-mode 1)
-
-;; el-get
-
-;(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
-;(require 'el-get)
-
-;(setq el-get-sources
-    ;'( pov-mode vimpulse)
-;)
 
 ;(el-get 'sync)
 (ido-mode)
 
-(tool-bar-mode)
+; (tool-bar-mode)
 
-;; reload file keep at position
-(defun reload-file ()
-  (interactive)
-  (let ((curr-scroll (window-vscroll)))
-    (find-file (buffer-name))
-    (set-window-vscroll nil curr-scroll)
-    (message "Reloaded file")))
- 
-(global-set-key "\C-c\C-r" 'reload-file)
 
 (fset 'yes-or-no-p 'y-or-n-p)
-(require 'recentf)
-(recentf-mode 1)
-;; recent files
-(global-set-key (kbd "M-o M-r") 'recentf-open-files)
 
 
 (require 'color-theme)
-;(load-file "~/.emacs.d/my-ext/sunburst.el")
-;(color-theme-sunburst)
-;(color-theme-twilight)
-(load-file "~/.emacs.d/my-ext/desertex.el")
-(color-theme-desertex)
+(load-file "~/.emacs.d/my-ext/tomorrow-night-theme.el")
 
 (add-to-list 'load-path "~/.emacs.d/my-ext")
 (add-to-list 'load-path "~/.emacs.d/scala-mode")
-(add-to-list 'load-path "~/.emacs.d/my-ext/yasnippet-0.6.1c")
-    (require 'yasnippet)
-    (yas/initialize)
-    (yas/load-directory "~/.emacs.d/my-ext/yasnippet-0.6.1c/snippets")
+; (add-to-list 'load-path "~/.emacs.d/my-ext/yasnippet-0.6.1c")
+;     (require 'yasnippet)
+;     (yas/initialize)
+;     (yas/load-directory "~/.emacs.d/my-ext/yasnippet-0.6.1c/snippets")
 (add-to-list 'load-path "~/.emacs.d/ensime/elisp")
 
-(set-default-font "-outline-Consolas-normal-r-normal-normal-13-97-96-96-c-*-iso8859-1")
+(set-default-font "-outline-Consolas-normal-r-normal-normal-12-97-96-96-c-*-iso8859-1")
 
-;;(require 'vimpulse)
+(require 'recentf)
+    (recentf-mode 1)
 
-;; Always show line numbers
+
 (global-linum-mode 1)
-;;(require 'setnu+)
-;;(add-hook 'text-mode-hook 'turn-on-setnu-mode)
 
 (require 'scala-mode-auto)
 (add-hook 'scala-mode-hook '(lambda () (yas/minor-mode-on)))
 (require 'sbt)
 (require  'ensime)
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
-'(inhibit-read-only t)
-(require 'sr-speedbar)
+;(inhibit-read-only t)
 (require 'protobuf-mode)
 
-(defconst mojolly-protobuf-style
+(defconst my-protobuf-style
   '((c-basic-offset . 2)
     (indent-tabs-mode . nil)))
 
 (add-hook 'protobuf-mode-hook
-  (lambda () (c-add-style "mojolly-style" mojolly-protobuf-style t)))
+  (lambda () (c-add-style "my-style" my-protobuf-style t)))
 
 (require 'highline)
 (highline-mode 1)
- 
-;; To customize the background color
-(set-face-background 'highline-face "#222")
-
-;; Change cursor color according to mode; inspired by
-;; http://www.emacswiki.org/emacs/ChangingCursorDynamically
-(setq djcb-read-only-color       "gray")
-;; valid values are t, nil, box, hollow, bar, (bar . WIDTH), hbar,
-;; (hbar. HEIGHT); see the docs for set-cursor-type
-
-(setq djcb-read-only-cursor-type 'hbar)
-(setq djcb-overwrite-color       "red")
-(setq djcb-overwrite-cursor-type 'box)
-(setq djcb-normal-color          "yellow")
-(setq djcb-normal-cursor-type    'bar)
-
-(defun djcb-set-cursor-according-to-mode ()
-  "change cursor color and type according to some minor modes."
-
-  (cond
-    (buffer-read-only
-      (set-cursor-color djcb-read-only-color)
-      (setq cursor-type djcb-read-only-cursor-type))
-    (overwrite-mode
-      (set-cursor-color djcb-overwrite-color)
-      (setq cursor-type djcb-overwrite-cursor-type))
-    (t 
-      (set-cursor-color djcb-normal-color)
-      (setq cursor-type djcb-normal-cursor-type))))
-
-(add-hook 'post-command-hook 'djcb-set-cursor-according-to-mode)
-
-
 
 ;;
 ;; window movement etc {{{
@@ -209,3 +106,43 @@
 
 ;;; init.el ends here
 
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(auto-save-default nil)
+ '(backup-inhibited t t)
+ '(cursor-type (quote bar) t)
+ '(custom-safe-themes (quote ("e023ca8cf9513e55396e9cff94b2c1daa22dd978d61c9d8f9f566c8b4faec979" "cec5a574cd1c687c34820d184c904f824cc45649fa25370f5fe7fc2fd1bec726" "71efabb175ea1cf5c9768f10dad62bb2606f41d110152f4ace675325d28df8bd" default)))
+ '(echo-keystrokes 0.01)
+ '(fill-column 78)
+ '(frame-title-format (quote ("%f - " user-real-login-name "@" system-name)) t)
+ '(ido-auto-merge-work-directories-length nil)
+ '(ido-create-new-buffer (quote always))
+ '(ido-enable-flex-matching t)
+ '(ido-enable-prefix nil)
+ '(ido-everywhere t)
+ '(ido-ignore-extensions t)
+ '(ido-max-prospects 8)
+ '(ido-use-filename-at-point (quote guess))
+ '(indent-tabs-mode nil)
+ '(indicate-empty-lines t)
+ '(inhibit-startup-screen t)
+ '(linum-format "  %d  ")
+ '(package-archives (quote (("gnu" . "http://elpa.gnu.org/packages/") ("marmalade" . "http://marmalade-repo.org/packages/"))))
+ '(puppet-indent-level tab-width)
+ '(recentf-max-saved-items 75)
+ '(require-final-newline t)
+ '(ruby-indent-level tab-width)
+ '(show-paren-delay 0)
+ '(tab-width 2))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+(setq-default indent-tabs-mode nil)
+(global-set-key (kbd "C-x f") 'find-file-in-project)
