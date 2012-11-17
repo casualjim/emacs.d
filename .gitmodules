@@ -1,0 +1,6 @@
+[submodule "scala-mode2"]
+	path = scala-mode2
+	url = git://github.com/hvesalai/scala-mode2
+[submodule "scalatra-mode"]
+	path = scalatra-mode
+	url = git://github.com/hvesalai/scalatra-mode
