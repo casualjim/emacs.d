@@ -504,15 +504,15 @@ Do not show 'Writing..' message."
     (let* ((point (posn-point (event-end event)))
            (ident (tooltip-identifier-from-point point))
            (note-overlays (ensime-overlays-at point))
-	   (val-at-pt (ensime-db-value-for-name-at-point point)))
+	   (val-at-pt (ensime-rpc-debug-to-string
+		       (ensime-db-location-at-point point))))
 
 
       (cond
 
        ;; If debugger is active and we can get the value of the symbol
        ;; at the point, show it in the tooltip.
-       (val-at-pt (ensime-tooltip-show-message (ensime-db-value-short-name
-						val-at-pt)) t)
+       (val-at-pt (ensime-tooltip-show-message val-at-pt) t)
 
        ;; If error or warning overlays exist,
        ;; show that message..
@@ -2938,6 +2938,39 @@ any buffer visiting the given file."
 	    (end (cadr range)))
 	(ensime-set-selection start end)))))
 
+(defun ensime-inspect-bytecode ()
+  "Show the bytecode for the current method."
+  (interactive)
+  (let ((bc (ensime-rpc-method-bytecode buffer-file-name (current-line))))
+    (if (not bc)
+	(message "Could not find bytecode.")
+      (progn
+	(ensime-ui-show-nav-buffer "*ensime-method-bytecode-buffer*" bc t)
+	))))
+
+(defvar ensime-ui-method-bytecode-handler
+  (list
+   :init (lambda (info)
+	   (ensime-ui-insert-method-bytecode info))
+   :update (lambda (info))
+   :help-text "Press q to quit."
+   :writable nil
+   :keymap `()
+   ))
+
+(defun ensime-ui-insert-method-bytecode (val)
+  (destructuring-bind
+      (&key class-name name bytecode &allow-other-keys) val
+    (insert class-name)
+    (insert "\n")
+    (insert name)
+    (insert "\n\n")
+    (dolist (op bytecode)
+      (ensime-insert-with-face (car op) 'font-lock-constant-face)
+      (insert " ")
+      (ensime-insert-with-face (cadr op) 'font-lock-variable-name-face)
+      (insert "\n")
+      )))
 
 ;; Basic RPC calls
 
@@ -2957,13 +2990,17 @@ any buffer visiting the given file."
   (ensime-eval-async
    `(swank:debug-backtrace ,thread-id ,index ,count) continue))
 
-(defun ensime-rpc-debug-value-for-name (thread-id name)
+(defun ensime-rpc-debug-locate-name (thread-id name)
   (ensime-eval
-   `(swank:debug-value-for-name ,thread-id ,name)))
+   `(swank:debug-locate-name ,thread-id ,name)))
 
 (defun ensime-rpc-debug-value (location)
   (ensime-eval
    `(swank:debug-value ,location)))
+
+(defun ensime-rpc-debug-to-string (location)
+  (ensime-eval
+   `(swank:debug-to-string ,location)))
 
 (defun ensime-rpc-debug-set-value (location new-val)
   (ensime-eval
