@@ -74,15 +74,9 @@
 
 (add-to-list 'load-path "~/.emacs.d/my-ext")
 (add-to-list 'load-path "~/.emacs.d/scala-mode2")
-; (add-to-list 'load-path "~/.emacs.d/my-ext/yasnippet-0.6.1c")
-;     (require 'yasnippet)
-;     (yas/initialize)
-;     (yas/load-directory "~/.emacs.d/my-ext/yasnippet-0.6.1c/snippets")
 (add-to-list 'load-path "~/.emacs.d/ensime/elisp")
 
 (require 'color-theme)
-; (load-file "~/.emacs.d/my-ext/tomorrow-night-theme.el")
-; (load-theme 'monokai)
 (load-file "~/.emacs.d/my-ext/desertex.el")
 (color-theme-desertex)
 
@@ -96,13 +90,8 @@
 (global-linum-mode 1)
 
 (require 'scala-mode)
-;;(require 'scala-mode-auto)
-;;(add-hook 'scala-mode-hook '(lambda () (yas/minor-mode-on)))
-(require 'sbt)
 (require  'ensime)
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
-; (setq ensime-sem-high-faces '())
-;(inhibit-read-only t)
 (require 'protobuf-mode)
 
 (defconst my-protobuf-style
@@ -111,9 +100,6 @@
 
 (add-hook 'protobuf-mode-hook
   (lambda () (c-add-style "my-style" my-protobuf-style t)))
-
-(require 'highline)
-(highline-mode 1)
 
 ;;
 ;; window movement etc {{{
@@ -154,6 +140,7 @@
  '(echo-keystrokes 0.01)
  '(fill-column 78)
  '(frame-title-format (quote ("%f - " user-real-login-name "@" system-name)) t)
+ '(global-highline-mode t)
  '(ido-auto-merge-work-directories-length nil)
  '(indicate-empty-lines t)
  '(inhibit-startup-screen t)
@@ -299,4 +286,14 @@
  (progn   (copy-file filename newname 1)  (delete-file filename)  (set-visited-file-name newname)   (set-buffer-modified-p nil)   t)))) 
 
 (require 'znc)
+
+(require 'highline)
+(defun highline-mode-on () (highline-mode 1))
+;; Turn on local highlighting for Dired (C-x d)
+(add-hook 'dired-after-readin-hook #'highline-mode-on)
+;; Turn on local highlighting for list-buffers (C-x C-b)
+(defadvice list-buffers (after highlight-line activate)
+  (save-excursion
+    (set-buffer "*Buffer List*")
+    (highline-mode-on)))
 

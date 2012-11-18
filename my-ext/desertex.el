@@ -51,10 +51,12 @@
      (font-lock-regexp-grouping-backslash ((t (:foreground "#E9C062"))))
      (font-lock-regexp-grouping-construct ((t (:foreground "red"))))
  
-     (font-lock-ido-first-match-face ((t (:foreground "#eedc82"))))
-     (font-lock-ido-only-match-face ((t (:foreground "#ee799f"))))
-     (font-lock-ido-subdir-face ((t (:foreground "#7ccd7c"))))
- 
+     (ido-first-match-face ((t (:foreground "#eedc82"))))
+     (ido-only-match-face ((t (:foreground "#ee799f"))))
+     (ido-subdir-face ((t (:foreground "#7ccd7c"))))
+
+     (highline-face ((t (:background "#2e2e2e"))))
+     ; #1f1f1f  
 
      (font-lock-string-face ((t (:foreground "#eedc82"))))
      (font-lock-type-face ((t (:foreground "#76eec6"))))
