@@ -25,13 +25,12 @@
 (add-to-list 'load-path dotfiles-dir)
 
 (require 'package)
-(dolist (source '(("marmalade" . "http://marmalade-repo.org/packages/")
-                  ("elpa" . "http://tromey.com/elpa/")))
-  (add-to-list 'package-archives source t))
+  (dolist (source '(("marmalade" . "http://marmalade-repo.org/packages/")))
+  ;                   ("elpa" . "http://tromey.com/elpa/")))
+    (add-to-list 'package-archives source t)) 
+    (add-to-list 'package-archives
+             '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
-
-(require 'anything-match-plugin)
-(require 'anything-config)
 
 ;; You can keep system- or user-specific customizations here
 (setq system-specific-config (concat dotfiles-dir system-name ".el")
@@ -63,6 +62,15 @@
 
 
 (fset 'yes-or-no-p 'y-or-n-p)
+
+(require 'helm-config)
+(helm-mode 1)
+(require 'helm-gist)
+(require 'helm-git)
+(require 'helm-projectile)
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
+(global-set-key (kbd "C-x f") 'helm-for-files)
+
 
 (add-to-list 'load-path "~/.emacs.d/my-ext")
 (add-to-list 'load-path "~/.emacs.d/scala-mode2")
@@ -150,13 +158,13 @@
  '(indicate-empty-lines t)
  '(inhibit-startup-screen t)
  '(linum-format "  %d  ")
- '(package-archives (quote (("gnu" . "http://elpa.gnu.org/packages/") ("marmalade" . "http://marmalade-repo.org/packages/"))))
  '(puppet-indent-level tab-width)
  '(recentf-max-saved-items 75)
  '(require-final-newline t)
  '(ruby-indent-level tab-width)
  '(show-paren-delay 0)
- '(tab-width 2))
+ '(tab-width 2)
+ '(znc-servers (quote (("irc.flanders.co.nz" 6667 nil ((freenode "casualjim" "gevonden")))))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -244,8 +252,52 @@
 ))
 
 (add-to-list 'load-path "~/.emacs.d/scalatra-mode/")
+(require 'scalatra-mode)
 
-(add-hook 'scala-mode-hook '(lambda ()
-  (require 'scalatra-mode)
-  (scalatra-mode)
-))
+(require 'projectile)
+(projectile-global-mode)
+
+;; someday might want to rotate windows if more than 2 of them
+(defun swap-windows ()
+ "If you have 2 windows, it swaps them." (interactive) (cond ((not (= (count-windows) 2)) (message "You need exactly 2 windows to do this."))
+ (t
+ (let* ((w1 (first (window-list)))
+   (w2 (second (window-list)))
+   (b1 (window-buffer w1))
+   (b2 (window-buffer w2))
+   (s1 (window-start w1))
+   (s2 (window-start w2)))
+ (set-window-buffer w1 b2)
+ (set-window-buffer w2 b1)
+ (set-window-start w1 s2)
+ (set-window-start w2 s1)))))
+
+;;
+;; Never understood why Emacs doesn't have this function.
+;;
+(defun rename-file-and-buffer (new-name)
+ "Renames both current buffer and file it's visiting to NEW-NAME." (interactive "sNew name: ")
+ (let ((name (buffer-name))
+  (filename (buffer-file-name)))
+ (if (not filename)
+  (message "Buffer '%s' is not visiting a file!" name)
+ (if (get-buffer new-name)
+   (message "A buffer named '%s' already exists!" new-name)
+  (progn   (rename-file name new-name 1)   (rename-buffer new-name)    (set-visited-file-name new-name)    (set-buffer-modified-p nil)))))) ;;
+;; Never understood why Emacs doesn't have this function, either.
+;;
+(defun move-buffer-file (dir)
+ "Moves both current buffer and file it's visiting to DIR." (interactive "DNew directory: ")
+ (let* ((name (buffer-name))
+   (filename (buffer-file-name))
+   (dir
+   (if (string-match dir "\\(?:/\\|\\\\)$")
+   (substring dir 0 -1) dir))
+   (newname (concat dir "/" name)))
+
+ (if (not filename)
+  (message "Buffer '%s' is not visiting a file!" name)
+ (progn   (copy-file filename newname 1)  (delete-file filename)  (set-visited-file-name newname)   (set-buffer-modified-p nil)   t)))) 
+
+; (require 'znc)
+

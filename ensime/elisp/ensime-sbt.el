@@ -48,7 +48,7 @@
   :group 'ensime
   :prefix "ensime-sbt-")
 
-(defcustom ensime-sbt-program-name "sbt"
+(defcustom ensime-sbt-program-name "/Users/ivan/bin/sbt"
   "Program invoked by the `run-sbt' command."
   :type 'string
   :group 'ensime-sbt)
