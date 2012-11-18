@@ -101,7 +101,7 @@
 (require 'sbt)
 (require  'ensime)
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
-(setq ensime-sem-high-faces '())
+; (setq ensime-sem-high-faces '())
 ;(inhibit-read-only t)
 (require 'protobuf-mode)
 
@@ -298,5 +298,5 @@
   (message "Buffer '%s' is not visiting a file!" name)
  (progn   (copy-file filename newname 1)  (delete-file filename)  (set-visited-file-name newname)   (set-buffer-modified-p nil)   t)))) 
 
-; (require 'znc)
+(require 'znc)
 
