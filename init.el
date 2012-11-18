@@ -163,8 +163,7 @@
  '(require-final-newline t)
  '(ruby-indent-level tab-width)
  '(show-paren-delay 0)
- '(tab-width 2)
- '(znc-servers (quote (("irc.flanders.co.nz" 6667 nil ((freenode "casualjim" "gevonden")))))))
+ '(tab-width 2))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
